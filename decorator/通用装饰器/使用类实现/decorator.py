@@ -1,47 +1,41 @@
+from types import GeneratorType
+
 class Decorator:
     # 承接装饰器参数
-    def __init__(self, before=None, after=None, *args, **kwargs):
-        self.dec_args = args
-        self.dec_kwargs = kwargs
-
+    def __init__(self, before=None, after=None):
+        # before 与 after 都必须是无参函数
         self.before = before
         self.after = after
 
     # 接收被装饰函数
     def __call__(self, fn):
-        # 接收被装饰函数的参数
-        return lambda *fn_args, **fn_kwargs: {
-            self.__fn_info(fn, *fn_args, **fn_kwargs),
-            self.__exec()
-        }
+        # 收集被装饰函数的参数
+        def collection(*args, **kwargs):
+            with self:
+                return fn(*args, **kwargs)
 
-    def __fn_info(self, fn, *fn_args, **fn_kwargs):
-        self.fn = fn
-        self.fn_args = fn_args
-        self.fn_kwargs = fn_kwargs
+        return collection
 
     # 在被装饰函数调用前调用的函数
     def __enter__(self):
-        # self.before(*self.dec_args, **self.dec_kwargs)
+        # self.before()
         print("before")
         return self
 
     # 在被装饰函数调用后调用的函数
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # self.after(*self.dec_args, **self.dec_kwargs)
+        # self.after()
         print("after")
-        pass
-
-    # 执行
-    def __exec(self):
-        with self:
-            return self.fn(*self.fn_args, **self.fn_kwargs)
+        return self
+    
 
 
 @Decorator()
 def test_function():
     print("*" * 10)
+    return "final"
 
 
 if __name__ == "__main__":
-    test_function()
+    t = test_function()
+    print(t)
